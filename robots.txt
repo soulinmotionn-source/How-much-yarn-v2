@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://howmuchyarn.com/sitemap.xml
