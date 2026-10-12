@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Yarn Yardage Calculator &mdash; HowMuchYarn</title>
+<meta name="description" content="Embeddable free yarn yardage calculator for knitting and crochet projects.">
+<meta name="robots" content="noindex,follow">
+<link rel="icon" href="assets/logo-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body class="embed-page">
+<div class="embed-brand"><img src="assets/logo-icon.png" alt="HowMuchYarn logo" width="34" height="34"> HowMuchYarn</div>
+<div class="calc-grid" id="yarn-calc" data-preset-project="">
+<div class="card">
+<div class="card-head">
+<span class="mark"><img src="assets/logo-icon.png" alt="" width="40" height="40"></span>
+<div><h2>Calculate Your Yarn Needs</h2>
+<p>Pick a project or enter custom dimensions, choose your craft and stitch, and get an instant estimate with cost.</p></div>
+</div>
+<div class="mode-tabs" role="tablist" aria-label="Calculator mode">
+<button type="button" class="mode-tab active" data-mode-tab="project" role="tab" aria-selected="true">By project</button>
+<button type="button" class="mode-tab" data-mode-tab="custom" role="tab" aria-selected="false">Custom size</button>
+</div>
+<div class="field-grid">
+<div class="field span-2" data-show="project">
+<label for="f-project"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16"/></svg> Project</label>
+<select id="f-project" data-field="project" aria-label="Project"></select>
+</div>
+<div class="field span-2" data-show="custom" hidden>
+<label id="f-size-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16"/></svg> Finished size</label>
+<div class="dim-grid" role="group" aria-labelledby="f-size-label">
+<input data-field="width" type="number" min="1" inputmode="decimal" placeholder="Width" aria-label="Width">
+<input data-field="length" type="number" min="1" inputmode="decimal" placeholder="Length" aria-label="Length">
+<select data-field="unit" aria-label="Units"><option value="in">inches</option><option value="cm">cm</option></select>
+</div>
+</div>
+<div class="field">
+<label id="f-craft-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5-9-5zM3 13l9 5 9-5"/></svg> Craft</label>
+<div class="segmented" role="radiogroup" aria-labelledby="f-craft-label">
+<label class="seg"><input type="radio" name="craft" data-field="craft" value="knit" checked><span>Knitting</span></label>
+<label class="seg"><input type="radio" name="craft" data-field="craft" value="crochet"><span>Crochet</span></label>
+</div>
+</div>
+<div class="field">
+<label for="f-weight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5-9-5zM3 13l9 5 9-5"/></svg> Yarn weight</label>
+<select id="f-weight" data-field="weight" aria-label="Yarn weight"></select>
+</div>
+<div class="field">
+<label for="f-stitch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16"/></svg> Stitch pattern</label>
+<select id="f-stitch" data-field="stitch" aria-label="Stitch pattern"></select>
+</div>
+<div class="field">
+<label for="f-skein"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 17V7m0 10h16M4 7h16M7 7v10M17 7v10"/></svg> Yards per skein <span style="font-weight:400">(from your label)</span></label>
+<input id="f-skein" data-field="skein" type="number" min="1" inputmode="numeric" value="220" aria-describedby="skein-hint">
+<p class="hint" id="skein-hint">Auto-filled for the chosen weight — change it to match your yarn.</p>
+</div>
+<div class="field">
+<label for="f-buffer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/></svg> Safety buffer <output data-field="buffer-val" for="f-buffer">10%</output></label>
+<div class="buffer-row"><input id="f-buffer" data-field="buffer" type="range" min="0" max="50" step="1" value="10" aria-describedby="buffer-hint"></div>
+<p class="hint" id="buffer-hint">10–15% covers gauge differences and mistakes.</p>
+</div>
+<div class="field">
+<label for="f-price"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 17V7m0 10h16M4 7h16M7 7v10M17 7v10"/></svg> Price per skein <span style="font-weight:400">(optional)</span></label>
+<input id="f-price" data-field="price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 8.99">
+<p class="hint">Add it to see your estimated project cost.</p>
+</div>
+</div>
+<button class="btn-primary" data-action="calculate" type="button">Calculate Yarn <span class="arr">&rsaquo;</span></button>
+</div>
+<div class="card results-card" aria-live="polite">
+<div class="card-head">
+<span class="mark" style="background:var(--sage)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" stroke-width="2" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg></span>
+<div><h2>Your Results</h2>
+<p>Yardage, skeins, and cost — updated live as you change options.</p></div>
+</div>
+<div data-field="result"></div>
+</div>
+</div>
+<p class="embed-powered">Powered by <a href="https://howmuchyarn.com/" target="_blank" rel="noopener">HowMuchYarn</a> &mdash; free yarn calculator</p>
+<script src="assets/js/calculator.js"></script>
+<script>
+function hmySend(){try{parent.postMessage({hmyHeight:document.documentElement.scrollHeight},"*");}catch(e){}}
+window.addEventListener("load",function(){hmySend();setTimeout(hmySend,600);});
+if("MutationObserver" in window){new MutationObserver(hmySend).observe(document.getElementById("yarn-calc"),{childList:true,subtree:true,attributes:true});}
+</script>
+</body>
+</html>
