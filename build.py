@@ -3,11 +3,11 @@
 
 SOURCES (edit these, then run `python3 build.py`):
   projects.json, guides.json,
-  assets/css/main.css, assets/js/calculator.js, assets/img/*
+  assets/css/main.css, assets/js/calculator.js, assets/*
 
 GENERATED (never hand-edit — rerun the builder instead):
-  index.html, projects/*.html, guides/*.html,
-  about.html, contact.html, privacy-policy.html, terms.html,
+  index, projects/*, guides/*,
+  about, contact, privacy-policy, terms,
   sitemap.xml, robots.txt
 """
 import json
@@ -82,7 +82,7 @@ POPULAR = [  # (project key, card label) — matches the approved mockup
 ]
 
 def img_url(name):
-    return f"{SITE}/assets/img/{name}"
+    return f"{SITE}/assets/{name}"
 
 def esc(s):
     return (s or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
@@ -133,7 +133,7 @@ def ld_article(g, image):
                           "logo": {"@type": "ImageObject", "url": img_url("logo-icon.png")}},
             "datePublished": "2026-10-02", "dateModified": TODAY,
             "description": g["meta_desc"],
-            "mainEntityOfPage": SITE + "/guides/" + g["slug"] + ".html"}
+            "mainEntityOfPage": SITE + "/guides/" + g["slug"] + ""}
 
 def ld_script(*objs):
     return '<script type="application/ld+json">\n' + json.dumps(
@@ -164,9 +164,9 @@ def head(title, desc, canon_path, og_image, ld_objs):
 <meta name="twitter:title" content="{esc(title)}">
 <meta name="twitter:description" content="{esc(desc)}">
 <meta name="twitter:image" content="{og_image}">
-<link rel="icon" type="image/png" sizes="32x32" href="{RP}assets/img/favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="{RP}assets/img/favicon-16.png">
-<link rel="apple-touch-icon" href="{RP}assets/img/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="{RP}assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="{RP}assets/favicon-16.png">
+<link rel="apple-touch-icon" href="{RP}assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="{FONTS_URL}" rel="stylesheet">
@@ -180,18 +180,18 @@ def site_header(active):
         return f'<a href="{href}"{cls}>{label}</a>'
     return f"""<header class="site-header">
 <div class="container header-inner">
-<a class="brand" href="{RP}index.html" aria-label="{SITE_NAME} home">
-<img src="{RP}assets/img/logo-icon.png" alt="{SITE_NAME} logo" width="38" height="38">
+<a class="brand" href="{RP}./" aria-label="{SITE_NAME} home">
+<img src="{RP}assets/logo-icon.png" alt="{SITE_NAME} logo" width="38" height="38">
 <span>How Much <span class="yarn">Yarn</span></span>
 </a>
 <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
 </button>
 <nav class="main-nav" id="site-nav" aria-label="Main navigation">
-{nav(RP + "index.html", "Calculator", "calc")}
-{nav(RP + "projects/index.html", "Projects", "projects")}
-{nav(RP + "guides/index.html", "Guides", "guides")}
-<a class="search-btn" href="{RP}projects/index.html" aria-label="Browse all projects">
+{nav(RP + "./", "Calculator", "calc")}
+{nav(RP + "projects/index", "Projects", "projects")}
+{nav(RP + "guides/index", "Guides", "guides")}
+<a class="search-btn" href="{RP}projects/index" aria-label="Browse all projects">
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
 </a>
 </nav>
@@ -200,17 +200,17 @@ def site_header(active):
 
 def site_footer():
     proj_links = "".join(
-        f'<li><a href="{RP}projects/{p["slug"]}.html">{esc(LABELS[p["key"]])}</a></li>'
+        f'<li><a href="{RP}projects/{p["slug"]}">{esc(LABELS[p["key"]])}</a></li>'
         for p in PROJECTS[:6])
     guide_links = "".join(
-        f'<li><a href="{RP}guides/{g["slug"]}.html">{esc(g["h1"])}</a></li>'
+        f'<li><a href="{RP}guides/{g["slug"]}">{esc(g["h1"])}</a></li>'
         for g in GUIDES[:5])
     return f"""<footer class="site-footer">
 <div class="container">
 <div class="footer-grid">
 <div>
 <div class="footer-brand">
-<img src="{RP}assets/img/logo-icon.png" alt="" width="34" height="34">
+<img src="{RP}assets/logo-icon.png" alt="" width="34" height="34">
 <span>How Much <span class="yarn">Yarn</span></span>
 </div>
 <p>The free yarn yardage calculator for knitters and crocheters. Accurate estimates, skein counts, and plain-English guides — no guesswork, no wasted yarn.</p>
@@ -226,10 +226,10 @@ def site_footer():
 <div>
 <h3>About</h3>
 <ul>
-<li><a href="{RP}about.html">About us</a></li>
-<li><a href="{RP}contact.html">Contact</a></li>
-<li><a href="{RP}privacy-policy.html">Privacy policy</a></li>
-<li><a href="{RP}terms.html">Terms of use</a></li>
+<li><a href="{RP}about">About us</a></li>
+<li><a href="{RP}contact">Contact</a></li>
+<li><a href="{RP}privacy-policy">Privacy policy</a></li>
+<li><a href="{RP}terms">Terms of use</a></li>
 </ul>
 </div>
 </div>
@@ -243,7 +243,7 @@ def site_footer():
 
 def cookie_bar():
     return f"""<div class="cookie-bar" id="cookie-bar" role="dialog" aria-label="Cookie notice">
-<p>We use cookies to keep the site working and to show ads that keep the calculator free. See our <a href="{RP}privacy-policy.html">privacy policy</a>.</p>
+<p>We use cookies to keep the site working and to show ads that keep the calculator free. See our <a href="{RP}privacy-policy">privacy policy</a>.</p>
 <button type="button">Got it</button>
 </div>"""
 
@@ -280,8 +280,8 @@ def faq_block(faqs):
 def guide_card(g, desc=False):
     """Guide card with the short display title (SEO title stays in <title>/H1)."""
     d = f'\n<span class="desc">{esc(g["meta_desc"][:120])}…</span>' if desc else ""
-    return f"""<a class="pcard guides" href="{RP}guides/{g["slug"]}.html">
-<img src="{RP}assets/img/{GUIDE_IMG[g["slug"]]}" alt="{esc(g["h1"])}" loading="lazy" width="640" height="400">
+    return f"""<a class="pcard guides" href="{RP}guides/{g["slug"]}">
+<img src="{RP}assets/{GUIDE_IMG[g["slug"]]}" alt="{esc(g["h1"])}" loading="lazy" width="640" height="400">
 <span class="cap">{esc(g.get("card") or g["h1"])} <span class="go" aria-hidden="true">&rarr;</span></span>{d}</a>"""
 
 # ---------------------------------------------- calculator widget ---
@@ -296,7 +296,7 @@ def calc_widget(preset=""):
     return f"""<div class="calc-grid" id="yarn-calc" data-preset-project="{preset}">
 <div class="card">
 <div class="card-head">
-<span class="mark"><img src="{RP}assets/img/logo-icon.png" alt="" width="40" height="40"></span>
+<span class="mark"><img src="{RP}assets/logo-icon.png" alt="" width="40" height="40"></span>
 <div><h2>Calculate Your Yarn Needs</h2>
 <p>Select your project, yarn weight, and enter your yarn details to get an instant estimate.</p></div>
 </div>
@@ -358,15 +358,16 @@ def build_index():
     ])
 
     popular_cards = "".join(
-        f"""<a class="pcard" href="{RP}projects/{PROJ_BY_KEY[k]["slug"]}.html">
-<img src="{RP}assets/img/{PROJECT_IMG[k]}" alt="{esc(label)} — how much yarn you need" loading="lazy" width="400" height="400">
+        f"""<a class="pcard" href="{RP}projects/{PROJ_BY_KEY[k]["slug"]}">
+<img src="{RP}assets/{PROJECT_IMG[k]}" alt="{esc(label)} — how much yarn you need" loading="lazy" width="400" height="400">
 <span class="cap">{esc(label)} <span class="go" aria-hidden="true">&rarr;</span></span></a>"""
         for k, label in POPULAR)
 
     glance_rows = "".join(
-        f"""<tr><td><a href="{RP}projects/{PROJ_BY_KEY[k]["slug"]}.html">{esc(LABELS[k])}</a></td>"""
+        (lambda n: f"""<tr><td><a href="{RP}projects/{PROJ_BY_KEY[k]["slug"]}">{esc(LABELS[k])}</a></td>"""
         f"""<td class="num">{YARDAGE[k]["worsted"]:,} yds</td>"""
-        f"""<td>{-(-int(YARDAGE[k]["worsted"] * 1.1) // WEIGHT_SKEIN["worsted"])} skeins*</td></tr>"""
+        f"""<td>{n} skein{'s' if n != 1 else ''}*</td></tr>""")(
+            -(-int(YARDAGE[k]["worsted"] * 1.1) // WEIGHT_SKEIN["worsted"]))
         for k in ["baby-blanket", "throw-blanket", "scarf", "hat", "sweater", "shawl"])
 
     guide_cards = "".join(guide_card(g) for g in GUIDES)
@@ -379,7 +380,7 @@ def build_index():
 <div class="badges">{badges}</div>
 </div>
 <div class="hero-media">
-<img src="{RP}assets/img/hero.jpg" alt="Basket of yarn in terracotta, sage and cream with knitting needles" width="1200" height="750" fetchpriority="high">
+<img src="{RP}assets/hero.jpg" alt="Basket of yarn in terracotta, sage and cream with knitting needles" width="1200" height="750" fetchpriority="high">
 <span class="hero-script" aria-hidden="true">Make<br>your next<br>project with<br>confidence</span>
 </div>
 </div></section>
@@ -393,7 +394,7 @@ def build_index():
 <section class="section"><div class="container">
 <div class="section-head">
 <div><h2>Popular Projects</h2><p>Choose a project to see typical yardage ranges, helpful tips, and FAQs.</p></div>
-<a class="link-more" href="{RP}projects/index.html">View all projects &rarr;</a>
+<a class="link-more" href="{RP}projects/index">View all projects &rarr;</a>
 </div>
 <div class="cards">{popular_cards}</div>
 </div></section>
@@ -421,7 +422,7 @@ def build_index():
 <section class="section alt"><div class="container">
 <div class="section-head">
 <div><h2>Yarn guides</h2><p>Learn the math behind the estimates.</p></div>
-<a class="link-more" href="{RP}guides/index.html">View all guides &rarr;</a>
+<a class="link-more" href="{RP}guides/index">View all guides &rarr;</a>
 </div>
 <div class="cards guides">{guide_cards}</div>
 </div></section>
@@ -462,20 +463,20 @@ def build_project(p):
     img = PROJECT_IMG[key]
     label = LABELS[key]
     intro = "".join(f"<p>{x}</p>" for x in p["intro"])
-    crumbs = [("Home", SITE + "/"), ("Projects", SITE + "/projects/"), (p["h1"], SITE + "/projects/" + p["slug"] + ".html")]
+    crumbs = [("Home", SITE + "/"), ("Projects", SITE + "/projects/"), (p["h1"], SITE + "/projects/" + p["slug"] + "")]
 
     related = [q for q in PROJECTS if q["key"] != key][:3]
     rel_cards = "".join(
-        f"""<a class="pcard" href="{q["slug"]}.html">
-<img src="{RP}assets/img/{PROJECT_IMG[q["key"]]}" alt="{esc(LABELS[q["key"]])} yarn yardage" loading="lazy" width="400" height="400">
+        f"""<a class="pcard" href="{q["slug"]}">
+<img src="{RP}assets/{PROJECT_IMG[q["key"]]}" alt="{esc(LABELS[q["key"]])} yarn yardage" loading="lazy" width="400" height="400">
 <span class="cap">{esc(LABELS[q["key"]])} <span class="go" aria-hidden="true">&rarr;</span></span></a>"""
         for q in related)
 
     body = f"""<div class="container">
-<nav class="breadcrumb" aria-label="Breadcrumb"><a href="{RP}index.html">Home</a> &rsaquo; <a href="index.html">Projects</a> &rsaquo; {esc(p["h1"])}</nav>
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="{RP}./">Home</a> &rsaquo; <a href="./">Projects</a> &rsaquo; {esc(p["h1"])}</nav>
 <article class="prose" style="max-width:none">
 <h1>{esc(p["h1"])}</h1>
-<div class="article-hero"><img src="{RP}assets/img/{img}" alt="{esc(p["h1"])}" width="1200" height="514" loading="lazy"></div>
+<div class="article-hero"><img src="{RP}assets/{img}" alt="{esc(p["h1"])}" width="1200" height="514" loading="lazy"></div>
 <div class="prose">
 <p class="lede">{esc(p["intro"][0])}</p>
 {"".join(f"<p>{x}</p>" for x in p["intro"][1:])}
@@ -490,14 +491,14 @@ def build_project(p):
 
 <div class="cta-band">
 <div><h2>Get your exact numbers</h2><p>Run {esc(label.lower())} through the free calculator with your yarn's label details.</p></div>
-<a class="btn-light" href="{RP}index.html?project={key}">Calculate my yardage &rsaquo;</a>
+<a class="btn-light" href="{RP}./?project={key}">Calculate my yardage &rsaquo;</a>
 </div>
 
 <h2>Frequently asked questions</h2>
 {faq_block(p["faqs"])}
 
 <div class="related">
-<div class="section-head"><div><h2>Related projects</h2></div><a class="link-more" href="index.html">View all &rarr;</a></div>
+<div class="section-head"><div><h2>Related projects</h2></div><a class="link-more" href="./">View all &rarr;</a></div>
 <div class="cards" style="grid-template-columns:repeat(3,1fr)">{rel_cards}</div>
 </div>
 </article>
@@ -506,7 +507,7 @@ def build_project(p):
 
     html = base(
         title=p["title"], desc=p["meta_desc"],
-        canon_path="/projects/" + p["slug"] + ".html",
+        canon_path="/projects/" + p["slug"] + "",
         og_image=img_url(img),
         ld_objs=[ld_org(), ld_breadcrumb(crumbs), ld_faq(p["faqs"])],
         body=body, active="projects")
@@ -515,13 +516,13 @@ def build_project(p):
 def build_projects_index():
     global RP; RP = "../"
     cards = "".join(
-        f"""<a class="pcard" href="{p["slug"]}.html">
-<img src="{RP}assets/img/{PROJECT_IMG[p["key"]]}" alt="{esc(LABELS[p["key"]])} — yarn yardage and skein counts" loading="lazy" width="400" height="400">
+        f"""<a class="pcard" href="{p["slug"]}">
+<img src="{RP}assets/{PROJECT_IMG[p["key"]]}" alt="{esc(LABELS[p["key"]])} — yarn yardage and skein counts" loading="lazy" width="400" height="400">
 <span class="cap">{esc(LABELS[p["key"]])} <span class="go" aria-hidden="true">&rarr;</span></span>
 <span class="desc">{esc(p["meta_desc"][:110])}…</span></a>"""
         for p in PROJECTS)
     body = f"""<div class="container">
-<nav class="breadcrumb" aria-label="Breadcrumb"><a href="{RP}index.html">Home</a> &rsaquo; Projects</nav>
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="{RP}./">Home</a> &rsaquo; Projects</nav>
 <h1 style="margin-bottom:8px">Yarn Yardage by Project</h1>
 <p class="hero-sub" style="margin-top:0">Pick your project for detailed yardage charts, skein counts, and FAQs — then run the numbers through the free calculator.</p>
 <div class="cards" style="margin:30px 0 10px">{cards}</div>
@@ -541,26 +542,26 @@ def build_guide(g):
     global RP; RP = "../"
     img = GUIDE_IMG[g["slug"]]
     secs = "".join(f'<h2>{esc(s["h2"])}</h2>\n{s["html"]}' for s in g["sections"])
-    crumbs = [("Home", SITE + "/"), ("Guides", SITE + "/guides/"), (g["h1"], SITE + "/guides/" + g["slug"] + ".html")]
+    crumbs = [("Home", SITE + "/"), ("Guides", SITE + "/guides/"), (g["h1"], SITE + "/guides/" + g["slug"] + "")]
     others = [h for h in GUIDES if h["slug"] != g["slug"]][:3]
     rel = "".join(guide_card(h) for h in others)
     body = f"""<div class="container">
-<nav class="breadcrumb" aria-label="Breadcrumb"><a href="{RP}index.html">Home</a> &rsaquo; <a href="index.html">Guides</a> &rsaquo; {esc(g["h1"])}</nav>
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="{RP}./">Home</a> &rsaquo; <a href="./">Guides</a> &rsaquo; {esc(g["h1"])}</nav>
 <article style="max-width:none">
 <h1>{esc(g["h1"])}</h1>
-<div class="article-hero"><img src="{RP}assets/img/{img}" alt="{esc(g["h1"])}" width="1200" height="514" loading="lazy"></div>
+<div class="article-hero"><img src="{RP}assets/{img}" alt="{esc(g["h1"])}" width="1200" height="514" loading="lazy"></div>
 <div class="prose">
 <p class="lede">{esc(g["lede"])}</p>
 {secs}
 </div>
 <div class="cta-band">
 <div><h2>Turn this into exact yardage</h2><p>Use the free calculator to convert what you learned into yardage and skein counts.</p></div>
-<a class="btn-light" href="{RP}index.html">Open the calculator &rsaquo;</a>
+<a class="btn-light" href="{RP}./">Open the calculator &rsaquo;</a>
 </div>
 <h2>Frequently asked questions</h2>
 {faq_block(g["faqs"])}
 <div class="related">
-<div class="section-head"><div><h2>More guides</h2></div><a class="link-more" href="index.html">View all &rarr;</a></div>
+<div class="section-head"><div><h2>More guides</h2></div><a class="link-more" href="./">View all &rarr;</a></div>
 <div class="cards guides">{rel}</div>
 </div>
 </article>
@@ -568,7 +569,7 @@ def build_guide(g):
 {ad_slot()}"""
     html = base(
         title=g["title"], desc=g["meta_desc"],
-        canon_path="/guides/" + g["slug"] + ".html",
+        canon_path="/guides/" + g["slug"] + "",
         og_image=img_url(img),
         ld_objs=[ld_org(), ld_breadcrumb(crumbs), ld_article(g, img), ld_faq(g["faqs"])],
         body=body, active="guides")
@@ -578,7 +579,7 @@ def build_guides_index():
     global RP; RP = "../"
     cards = "".join(guide_card(g, desc=True) for g in GUIDES)
     body = f"""<div class="container">
-<nav class="breadcrumb" aria-label="Breadcrumb"><a href="{RP}index.html">Home</a> &rsaquo; Guides</nav>
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="{RP}./">Home</a> &rsaquo; Guides</nav>
 <h1 style="margin-bottom:8px">Yarn Guides</h1>
 <p class="hero-sub" style="margin-top:0">The math behind the estimates: yarn weights, labels, substitution, buffers, and buying tips.</p>
 <div class="cards guides" style="margin:30px 0 10px">{cards}</div>
@@ -596,16 +597,17 @@ def build_guides_index():
 # ---------------------------------------------------- policy pages ---
 def policy_page(fname, title, desc, h1, prose_html):
     global RP; RP = ""
+    slug = fname[:-5] if fname.endswith("") else fname
     body = f"""<div class="container">
-<nav class="breadcrumb" aria-label="Breadcrumb"><a href="{RP}index.html">Home</a> &rsaquo; {esc(h1)}</nav>
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="{RP}./">Home</a> &rsaquo; {esc(h1)}</nav>
 <article class="prose">
 <h1>{esc(h1)}</h1>
 {prose_html}
 </article>
 </div>"""
-    html = base(title=title, desc=desc, canon_path="/" + fname,
+    html = base(title=title, desc=desc, canon_path="/" + slug,
                 og_image=img_url("hero.jpg"),
-                ld_objs=[ld_org(), ld_breadcrumb([("Home", SITE + "/"), (h1, SITE + "/" + fname)])],
+                ld_objs=[ld_org(), ld_breadcrumb([("Home", SITE + "/"), (h1, SITE + "/" + slug)])],
                 body=body)
     (ROOT / fname).write_text(html, encoding="utf-8")
 
@@ -623,7 +625,7 @@ def build_policies():
 <li><strong>Project pages</strong> — yardage charts by yarn weight, typical sizes, and answers to common questions.</li>
 <li><strong>Guides</strong> — yarn weights, reading labels, substitution math, and buying tips in plain English.</li></ul>
 <h2>Contact</h2>
-<p>Questions, corrections, or a project you'd like us to add? <a href="{RP}contact.html">Get in touch</a> — we read everything.</p>""")
+<p>Questions, corrections, or a project you'd like us to add? <a href="{RP}contact">Get in touch</a> — we read everything.</p>""")
 
     policy_page("contact.html",
         "Contact How Much Yarn",
@@ -705,12 +707,12 @@ def main():
     urls = [(SITE + "/", "weekly", "1.0"),
             (SITE + "/projects/", "weekly", "0.9"),
             (SITE + "/guides/", "weekly", "0.9")]
-    urls += [(SITE + "/projects/" + p["slug"] + ".html", "monthly", "0.8") for p in PROJECTS]
-    urls += [(SITE + "/guides/" + g["slug"] + ".html", "monthly", "0.7") for g in GUIDES]
-    urls += [(SITE + "/about.html", "yearly", "0.4"),
-             (SITE + "/contact.html", "yearly", "0.4"),
-             (SITE + "/privacy-policy.html", "yearly", "0.3"),
-             (SITE + "/terms.html", "yearly", "0.3")]
+    urls += [(SITE + "/projects/" + p["slug"] + "", "monthly", "0.8") for p in PROJECTS]
+    urls += [(SITE + "/guides/" + g["slug"] + "", "monthly", "0.7") for g in GUIDES]
+    urls += [(SITE + "/about", "yearly", "0.4"),
+             (SITE + "/contact", "yearly", "0.4"),
+             (SITE + "/privacy-policy", "yearly", "0.3"),
+             (SITE + "/terms", "yearly", "0.3")]
     build_sitemap(urls)
     build_robots()
 
