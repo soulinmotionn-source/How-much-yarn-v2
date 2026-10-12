@@ -154,6 +154,7 @@ def head(title, desc, canon_path, og_image, ld_objs):
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="{canon}">
 <meta name="theme-color" content="#355A47">
+<meta name="p:domain_verify" content="35c805e8404d6ec0fab481a5add46d5e"/>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="{SITE_NAME}">
 <meta property="og:title" content="{esc(title)}">
@@ -728,6 +729,7 @@ def build_embed():
 <title>Free Yarn Yardage Calculator &mdash; HowMuchYarn</title>
 <meta name="description" content="Embeddable free yarn yardage calculator for knitting and crochet projects.">
 <meta name="robots" content="noindex,follow">
+<meta name="p:domain_verify" content="35c805e8404d6ec0fab481a5add46d5e"/>
 <link rel="icon" href="assets/logo-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
