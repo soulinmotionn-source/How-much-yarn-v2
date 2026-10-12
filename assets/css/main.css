@@ -134,13 +134,31 @@ input[type=range][data-field=buffer]::-moz-range-thumb{width:22px;height:22px;bo
 .embed-page .calc-grid{max-width:720px;margin:0 auto}
 .embed-powered{text-align:center;font-size:.82rem;color:var(--muted);margin-top:18px}
 .embed-powered a{color:var(--forest);font-weight:700}
-.embed-section{background:var(--forest);border-radius:var(--radius);padding:40px;color:#fff;margin-top:64px}
-.embed-section h2{color:#fff;margin:0 0 8px}
-.embed-section p{color:rgba(255,255,255,.82);max-width:640px}
-.embed-section pre{background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:18px;overflow-x:auto;font-size:.8rem;line-height:1.5;color:#f3eedd;margin:20px 0 0;white-space:pre-wrap;word-break:break-all}
-.embed-copy-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap}
-.btn-ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.5);border-radius:12px;padding:12px 22px;font:inherit;font-weight:700;cursor:pointer;min-height:52px}
-.btn-ghost:hover{border-color:#fff}
+/* ---------- Embed band (full-bleed) ---------- */
+.embed-band{background:var(--forest);color:#fff;padding:76px 0;position:relative;overflow:hidden}
+.embed-band::after{content:"";position:absolute;inset:0;background:radial-gradient(640px 320px at 88% 18%,rgba(255,255,255,.07),transparent 70%);pointer-events:none}
+.embed-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:56px;align-items:center;position:relative;z-index:1}
+.embed-band .eyebrow{color:var(--sage)}
+.embed-band h2{color:#fff;margin:0 0 18px;font-size:clamp(1.6rem,2.6vw,2.15rem)}
+.embed-points{list-style:none;margin:0 0 30px;padding:0;display:grid;gap:14px}
+.embed-points li{display:flex;gap:12px;align-items:flex-start;color:rgba(255,255,255,.88);font-size:.97rem;line-height:1.55}
+.embed-points svg{width:20px;height:20px;flex:0 0 20px;color:#a9cdb2;margin-top:3px}
+.embed-points strong{color:#fff}
+.embed-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn-ghost{display:inline-flex;align-items:center;justify-content:center;background:transparent;color:#fff;border:2px solid rgba(255,255,255,.5);border-radius:14px;padding:13px 24px;font:inherit;font-weight:700;cursor:pointer;min-height:54px;text-decoration:none}
+.btn-ghost:hover{border-color:#fff;text-decoration:none}
+.code-window{background:#20302a;border:1px solid rgba(255,255,255,.13);border-radius:16px;overflow:hidden;box-shadow:0 24px 60px -20px rgba(0,0,0,.45)}
+.code-bar{display:flex;align-items:center;gap:12px;padding:11px 16px;background:rgba(255,255,255,.045);border-bottom:1px solid rgba(255,255,255,.1)}
+.code-dots{display:flex;gap:7px}
+.code-dots i{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.25)}
+.code-dots i:nth-child(1){background:#e0685d}
+.code-dots i:nth-child(2){background:#e6b34d}
+.code-dots i:nth-child(3){background:#6fbf73}
+.code-name{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.8rem;color:rgba(255,255,255,.55)}
+.code-copy{margin-left:auto;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:9px;padding:8px 15px;font:inherit;font-size:.83rem;font-weight:700;cursor:pointer;min-height:0}
+.code-copy:hover{background:rgba(255,255,255,.2)}
+.code-window pre{margin:0;padding:20px 22px;max-height:330px;overflow:auto;font-size:.79rem;line-height:1.7;color:#cfe0d2}
+.code-window code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre}
 
 /* ---------- Cards: projects & guides ---------- */
 .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:26px}
@@ -236,6 +254,8 @@ table.chart td.num{font-weight:700;color:var(--forest-deep)}
   .cards{grid-template-columns:repeat(3,1fr)}
   .cards.guides{grid-template-columns:repeat(2,1fr)}
   .calc-grid{grid-template-columns:1fr}
+  .embed-grid{grid-template-columns:1fr;gap:36px}
+  .embed-band{padding:56px 0}
   .footer-grid{grid-template-columns:1fr 1fr}
 }
 @media (max-width:640px){

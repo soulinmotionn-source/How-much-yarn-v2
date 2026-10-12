@@ -364,8 +364,10 @@ if (typeof document !== "undefined") {
       b.addEventListener("click", function () {
         var ta = document.getElementById("embed-code");
         var done = function () {
-          b.textContent = "Copied!";
-          setTimeout(function () { b.textContent = "Copy code"; }, 2000);
+          var label = b.querySelector("[data-copy-label]") || b;
+          var orig = label.textContent;
+          label.textContent = "Copied!";
+          setTimeout(function () { label.textContent = orig; }, 2000);
         };
         if (ta) {
           var txt = ta.textContent;

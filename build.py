@@ -749,15 +749,24 @@ if("MutationObserver" in window){{new MutationObserver(hmySend).observe(document
 
 def embed_section():
     code = esc(EMBED_SNIPPET)
-    return f"""<section class="section"><div class="container">
-<div class="embed-section">
+    check = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>'
+    return f"""<section class="embed-band" aria-label="Embed this calculator"><div class="container embed-grid">
+<div class="embed-copy">
+<p class="eyebrow">For bloggers &amp; pattern designers</p>
 <h2>Put this calculator on your website</h2>
-<p>Bloggers, pattern designers, and shop owners: embed our free yarn calculator on any page. It auto-resizes to fit, matches your content, and links back to us — free forever.</p>
-<pre><code id="embed-code">{code}</code></pre>
-<div class="embed-copy-row">
-<button type="button" class="btn-ghost" data-action="copy-embed">Copy code</button>
-<a class="btn-ghost" href="{SITE}/embed" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">Live preview</a>
+<ul class="embed-points">
+<li>{check}<span><strong>Auto-resizes to fit your page.</strong> No height tweaking, no broken layouts.</span></li>
+<li>{check}<span><strong>Free forever, no signup.</strong> Your readers get answers without leaving your site.</span></li>
+<li>{check}<span><strong>One discreet credit link.</strong> That&rsquo;s the whole deal.</span></li>
+</ul>
+<div class="embed-actions">
+<button type="button" class="btn-light" data-action="copy-embed"><span data-copy-label>Copy embed code</span></button>
+<a class="btn-ghost" href="{SITE}/embed" target="_blank" rel="noopener">Live preview</a>
 </div>
+</div>
+<div class="code-window">
+<div class="code-bar"><span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="code-name">embed.html</span><button type="button" class="code-copy" data-action="copy-embed"><span data-copy-label>Copy</span></button></div>
+<pre><code id="embed-code">{code}</code></pre>
 </div>
 </div></section>"""
 
