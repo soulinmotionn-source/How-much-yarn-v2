@@ -33,11 +33,12 @@ If you edit a `.html` file directly, your change will be wiped on the next build
 |---|---|---|
 | `projects.json` | YES | Data for the 18 long-tail calculator pages (slugs, keywords, intros, FAQs) |
 | `guides.json` | YES | Data for the 8 guide articles (sections, internal links, FAQs) |
-| `assets/js/calculator.js` | YES | `PROJECT_YARDAGE` data table + calculator widget logic (v2: button-triggered, `?project=`/`?weight=` URL prefill) |
-| `assets/css/main.css` | YES | All styling — v2 premium design tokens (see §9) |
+| `assets/js/calculator.js` | YES | `PROJECT_YARDAGE` data table + calculator widget logic (v3: By-project / Custom-size modes, knit-vs-crochet ×1.27, stitch-pattern factor, buffer slider, cost estimate, `?project=`/`?weight=` URL prefill; pure `calculate()` testable in Node) |
+| `assets/css/main.css` | YES | All styling — v2 premium design tokens (see §9) + v3 widget styles (mode tabs, segmented craft, slider, embed page/section) |
 | `assets/img/` | YES (add) | Photorealistic craft imagery. Card images are 800px, hero 1600px, q82 JPG. **2026-10-07: images now live flat in `assets/`** (user uploaded them there via GitHub web UI) — `build.py` was updated to reference `assets/` instead of `assets/img/`; keep both in sync |
 | `build.py` | YES (careful) | The generator. Config at top: `SITE`, `SITE_NAME`, `CONTACT_EMAIL` |
 | `index.html`, `projects/*.html`, `guides/*.html`, `about/contact/privacy-policy/terms.html` | NO | Generated output — do not touch |
+| `embed.html` | NO | Generated standalone embeddable calculator page (noindex, excluded from sitemap) — built by `build_embed()`; iframe auto-resizes via postMessage; homepage "embed this calculator" section gives bloggers the copy-paste snippet with Powered-by backlink |
 | `sitemap.xml`, `robots.txt` | NO | Generated output — do not touch |
 | `SEO-STRATEGY.md`, `UPDATE-GUIDE.md`, `DOMAIN-IDEAS.md`, `yarn-keywords-seo.xlsx` | YES | Docs / research, not deployed as site content |
 
