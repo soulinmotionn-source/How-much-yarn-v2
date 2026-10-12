@@ -1,5 +1,8 @@
-/* HowMuchYarn.com — yarn yardage calculator (v2).
-   Yardage figures are planning estimates (yards) for an average-size project,
+/* HowMuchYarn.com — yarn yardage calculator (v3).
+   Modes: project preset | custom dimensions.
+   Factors: craft (knit 1.0 / crochet 1.27), stitch pattern, safety buffer.
+   Optional cost estimate from price per skein.
+   Yardage figures are planning estimates (yards) for average-size projects,
    drawn from standard craft guides (Lion Brand, Craft Yarn Council charts).
    Pure calculation is dependency-free so it also runs in Node for testing. */
 
@@ -9,11 +12,23 @@ var YARN_WEIGHTS = [
   { id: "sport",      name: "Fine / Sport (2)",         skeinYards100g: 330 },
   { id: "dk",         name: "Light / DK (3)",           skeinYards100g: 280 },
   { id: "worsted",    name: "Medium / Worsted (4)",     skeinYards100g: 220 },
-  { id: "bulky",      name: "Bulky (5)",                skeinYards100g: 120 },
+  { id: "bulky",      name: "Bulky (5)",               skeinYards100g: 120 },
   { id: "superbulky", name: "Super Bulky (6)",          skeinYards100g: 70 }
 ];
 
 var WEIGHT_ORDER = ["lace", "fingering", "sport", "dk", "worsted", "bulky", "superbulky"];
+
+var CRAFTS = [
+  { id: "knit",    name: "Knitting", factor: 1.0 },
+  { id: "crochet", name: "Crochet",  factor: 1.27 }
+];
+
+var STITCHES = [
+  { id: "smooth",   name: "Smooth / stockinette",      factor: 1.0 },
+  { id: "garter",   name: "Garter / textured",         factor: 1.1 },
+  { id: "cables",   name: "Cables / heavy texture",    factor: 1.18 },
+  { id: "lace",     name: "Lace / openwork",           factor: 0.85 }
+];
 
 /* Estimated yardage (yards) per project per yarn weight. Missing entries mean
    that weight is uncommon for the project; the calculator falls back to the
@@ -60,53 +75,119 @@ var PROJECT_LABELS = {
   "rug": "Rug"
 };
 
+/* Yards per square inch for custom-size mode (knit, smooth stitch).
+   Calibrated from our own project table: worsted baseline 0.92, other
+   weights scaled by their average yardage ratio vs worsted. */
+var WEIGHT_AREA_YDS = (function () {
+  var base = 0.92, ratios = {}, counts = {};
+  Object.keys(PROJECT_YARDAGE).forEach(function (pk) {
+    var t = PROJECT_YARDAGE[pk];
+    if (t.worsted == null) return;
+    Object.keys(t).forEach(function (w) {
+      if (w === "worsted") return;
+      ratios[w] = (ratios[w] || 0) + t[w] / t.worsted;
+      counts[w] = (counts[w] || 0) + 1;
+    });
+  });
+  var out = { worsted: base };
+  Object.keys(ratios).forEach(function (w) { out[w] = base * ratios[w] / counts[w]; });
+  return out;
+})();
+
 function weightById(id) {
   for (var i = 0; i < YARN_WEIGHTS.length; i++) {
     if (YARN_WEIGHTS[i].id === id) return YARN_WEIGHTS[i];
   }
   return null;
 }
-
-/* Pure calculation: { yards, bufferedYards, meters, skeins, usedWeight, fellBack } */
-function calculate(projectKey, weightId, skeinYards, bufferPct) {
-  var table = PROJECT_YARDAGE[projectKey];
-  if (!table) return null;
-  var usedWeight = weightId, fellBack = false;
-  if (table[weightId] == null) {
-    var target = WEIGHT_ORDER.indexOf(weightId);
-    var best = null, bestDist = 99;
-    for (var w in table) {
-      if (!table.hasOwnProperty(w)) continue;
-      var d = Math.abs(WEIGHT_ORDER.indexOf(w) - target);
-      if (d < bestDist) { bestDist = d; best = w; }
-    }
-    usedWeight = best; fellBack = true;
+function craftById(id) {
+  for (var i = 0; i < CRAFTS.length; i++) {
+    if (CRAFTS[i].id === id) return CRAFTS[i];
   }
-  var yards = table[usedWeight];
-  var buffered = Math.round(yards * (1 + bufferPct / 100));
+  return CRAFTS[0];
+}
+function stitchById(id) {
+  for (var i = 0; i < STITCHES.length; i++) {
+    if (STITCHES[i].id === id) return STITCHES[i];
+  }
+  return STITCHES[0];
+}
+function nearestWeight(table, weightId) {
+  if (table[weightId] != null) return { id: weightId, fellBack: false };
+  var target = WEIGHT_ORDER.indexOf(weightId), best = null, bestDist = 99;
+  for (var w in table) {
+    if (!table.hasOwnProperty(w)) continue;
+    var d = Math.abs(WEIGHT_ORDER.indexOf(w) - target);
+    if (d < bestDist) { bestDist = d; best = w; }
+  }
+  return { id: best, fellBack: true };
+}
+
+/* Pure calculation.
+   opts: { mode: "project"|"custom",
+           projectKey, width, length, unit: "in"|"cm",
+           weightId, craftId, stitchId, skeinYards, bufferPct, pricePerSkein }
+   returns { yards, bufferedYards, meters, skeins, cost, usedWeight, fellBack, note } */
+function calculate(opts) {
+  var craft = craftById(opts.craftId);
+  var stitch = stitchById(opts.stitchId);
+  var nw = nearestWeight(PROJECT_YARDAGE[opts.projectKey] || PROJECT_YARDAGE["scarf"], opts.weightId);
+  var usedWeight = nw.id, fellBack = nw.fellBack;
+  var yards;
+  if (opts.mode === "custom") {
+    var wIn = parseFloat(opts.width), lIn = parseFloat(opts.length);
+    if (!(wIn > 0) || !(lIn > 0)) return null;
+    if (opts.unit === "cm") { wIn = wIn / 2.54; lIn = lIn / 2.54; }
+    var perIn2 = WEIGHT_AREA_YDS[usedWeight] || WEIGHT_AREA_YDS.worsted;
+    yards = Math.round(wIn * lIn * perIn2);
+  } else {
+    var table = PROJECT_YARDAGE[opts.projectKey];
+    if (!table) return null;
+    yards = table[usedWeight];
+  }
+  yards = Math.round(yards * craft.factor * stitch.factor);
+  var buffered = Math.round(yards * (1 + opts.bufferPct / 100));
+  var skeinYards = parseFloat(opts.skeinYards);
+  var w = weightById(usedWeight);
+  if (!(skeinYards > 0)) skeinYards = w ? w.skeinYards100g : 220;
   var skeins = Math.ceil(buffered / skeinYards);
+  var price = parseFloat(opts.pricePerSkein);
+  var cost = (price > 0) ? Math.round(skeins * price * 100) / 100 : null;
   return {
     yards: yards,
     bufferedYards: buffered,
     meters: Math.round(buffered * 0.9144),
     skeins: skeins,
+    cost: cost,
     usedWeight: usedWeight,
-    fellBack: fellBack
+    fellBack: fellBack,
+    craftName: craft.name,
+    stitchName: stitch.name
   };
 }
 
 function fmt(n) { return n.toLocaleString("en-US"); }
+function money(n) { return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
-/* ---- browser widget wiring (matches the v2 card markup) ---- */
+/* ---- browser widget wiring ---- */
 function initCalculator(rootId) {
   var root = document.getElementById(rootId || "yarn-calc");
   if (!root) return;
-  var projSel = root.querySelector("[data-field=project]");
-  var weightSel = root.querySelector("[data-field=weight]");
-  var skeinInput = root.querySelector("[data-field=skein]");
-  var bufferInput = root.querySelector("[data-field=buffer]");
-  var btn = root.querySelector("[data-action=calculate]");
-  var out = root.querySelector("[data-field=result]");
+  function q(sel) { return root.querySelector(sel); }
+  var projSel = q("[data-field=project]");
+  var weightSel = q("[data-field=weight]");
+  var skeinInput = q("[data-field=skein]");
+  var bufferInput = q("[data-field=buffer]");
+  var bufferVal = q("[data-field=buffer-val]");
+  var craftRadios = root.querySelectorAll("[data-field=craft]");
+  var stitchSel = q("[data-field=stitch]");
+  var widthInput = q("[data-field=width]");
+  var lengthInput = q("[data-field=length]");
+  var unitSel = q("[data-field=unit]");
+  var priceInput = q("[data-field=price]");
+  var btn = q("[data-action=calculate]");
+  var out = q("[data-field=result]");
+  var modeTabs = root.querySelectorAll("[data-mode-tab]");
   if (!projSel || !weightSel || !out) return;
 
   Object.keys(PROJECT_LABELS).forEach(function (k) {
@@ -119,8 +200,37 @@ function initCalculator(rootId) {
     o.value = w.id; o.textContent = w.name;
     weightSel.appendChild(o);
   });
+  STITCHES.forEach(function (s) {
+    var o = document.createElement("option");
+    o.value = s.id; o.textContent = s.name;
+    stitchSel.appendChild(o);
+  });
 
-  // Presets: data attributes first, then ?project=&weight= URL params (deep links from project pages)
+  var mode = "project";
+  function setMode(m) {
+    mode = m;
+    for (var i = 0; i < modeTabs.length; i++) {
+      var t = modeTabs[i];
+      var active = t.getAttribute("data-mode-tab") === m;
+      t.classList.toggle("active", active);
+      t.setAttribute("aria-selected", active ? "true" : "false");
+    }
+    var pf = root.querySelectorAll('[data-show="project"]');
+    var cf = root.querySelectorAll('[data-show="custom"]');
+    for (var j = 0; j < pf.length; j++) pf[j].hidden = (m !== "project");
+    for (var k = 0; k < cf.length; k++) cf[k].hidden = (m !== "custom");
+    render();
+  }
+  for (var ti = 0; ti < modeTabs.length; ti++) {
+    (function (t) {
+      t.addEventListener("click", function (e) {
+        e.preventDefault();
+        setMode(t.getAttribute("data-mode-tab"));
+      });
+    })(modeTabs[ti]);
+  }
+
+  // Presets: data attributes first, then ?project=&weight= URL params (deep links)
   var preset = root.getAttribute("data-preset-project");
   var qs = new URLSearchParams(window.location.search || "");
   var qProject = qs.get("project"), qWeight = qs.get("weight");
@@ -140,37 +250,81 @@ function initCalculator(rootId) {
     render();
   });
 
+  function currentCraft() {
+    for (var i = 0; i < craftRadios.length; i++) {
+      if (craftRadios[i].checked) return craftRadios[i].value;
+    }
+    return "knit";
+  }
+  function syncBufferLabel() {
+    var v = parseFloat(bufferInput.value) || 0;
+    if (bufferVal) bufferVal.textContent = v + "%";
+    var pct = Math.max(0, Math.min(50, v)) / 50 * 100;
+    bufferInput.style.background =
+      "linear-gradient(to right,var(--forest) 0%,var(--forest) " + pct +
+      "%,var(--line) " + pct + "%,var(--line) 100%)";
+  }
+
   function render() {
     var w = weightById(weightSel.value) || weightById("worsted");
     var skeinYards = parseFloat(skeinInput.value);
     if (!(skeinYards > 0)) skeinYards = w.skeinYards100g;
     var buffer = parseFloat(bufferInput.value);
     if (!(buffer >= 0)) buffer = 10;
-    var r = calculate(projSel.value, weightSel.value, skeinYards, buffer);
+    syncBufferLabel();
+    var r = calculate({
+      mode: mode,
+      projectKey: projSel.value,
+      width: widthInput ? widthInput.value : 0,
+      length: lengthInput ? lengthInput.value : 0,
+      unit: unitSel ? unitSel.value : "in",
+      weightId: weightSel.value,
+      craftId: currentCraft(),
+      stitchId: stitchSel ? stitchSel.value : "smooth",
+      skeinYards: skeinYards,
+      bufferPct: buffer,
+      pricePerSkein: priceInput ? priceInput.value : 0
+    });
     if (!r) return;
     var fallback = r.fellBack
       ? '<p class="calc-fallback">Estimate shown for ' + weightById(r.usedWeight).name +
-        ' — the closest available weight for this project.</p>'
+        " — the closest available weight for this project.</p>"
       : "";
+    var costBox = (r.cost != null)
+      ? '<div class="result-box"><span class="n">' + money(r.cost) + "</span>" +
+        '<span class="l">estimated cost (' + r.skeins + " skeins)</span></div>"
+      : "";
+    var label = mode === "custom"
+      ? "yards for your custom size"
+      : "yards for " + (PROJECT_LABELS[projSel.value] || "your project").toLowerCase();
     out.innerHTML =
       '<div class="result-row">' +
-        '<div class="result-box"><span class="n">' + fmt(r.bufferedYards) + '</span>' +
-        '<span class="l">yards needed (' + fmt(r.meters) + ' m)</span></div>' +
-        '<div class="result-box"><span class="n">' + r.skeins + '</span>' +
-        '<span class="l">skeins of ' + Math.round(skeinYards) + ' yd</span></div>' +
-      '</div>' + fallback +
+        '<div class="result-box"><span class="n">' + fmt(r.bufferedYards) + "</span>" +
+        '<span class="l">' + label + " (" + fmt(r.meters) + " m)</span></div>" +
+        '<div class="result-box"><span class="n">' + r.skeins + "</span>" +
+        '<span class="l">skeins of ' + Math.round(skeinYards) + " yd</span></div>" +
+        costBox +
+      "</div>" + fallback +
       '<div class="result-note">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3C7 7 5 11 5 14a7 7 0 0 0 14 0c0-3-2-7-7-11z"/></svg>' +
-        '<span>Includes a ' + buffer + '% buffer for gauge differences and mistakes. ' +
-        'Base estimate before buffer: ' + fmt(r.yards) + ' yards.</span>' +
-      '</div>';
+        "<span>" + r.craftName + " · " + r.stitchName.toLowerCase() + " · includes a " + buffer +
+        "% buffer. Base estimate before buffer: " + fmt(r.yards) + " yards.</span>" +
+      "</div>";
   }
 
   if (btn) btn.addEventListener("click", function (e) { e.preventDefault(); render(); });
-  projSel.addEventListener("change", render);
-  skeinInput.addEventListener("input", render);
-  bufferInput.addEventListener("input", render);
+  [projSel, weightSel, stitchSel, unitSel].forEach(function (el) {
+    if (el) el.addEventListener("change", render);
+  });
+  [skeinInput, bufferInput, widthInput, lengthInput, priceInput].forEach(function (el) {
+    if (el) el.addEventListener("input", render);
+  });
+  for (var ci = 0; ci < craftRadios.length; ci++) {
+    craftRadios[ci].addEventListener("change", render);
+  }
   refreshSkeinDefault();
+  syncBufferLabel();
+  setMode("project");
   render();
 }
 
@@ -190,7 +344,7 @@ if (typeof document !== "undefined") {
         if (e.target.closest("a")) {
           mn.classList.remove("open");
           mb.setAttribute("aria-expanded", "false");
-          mb.setAttribute("aria-label", "Open menu");
+          mb.setAttribute("aria-label", open ? "Close menu" : "Open menu");
         }
       });
     }
@@ -205,6 +359,30 @@ if (typeof document !== "undefined") {
         });
       }
     } catch (e) { /* storage unavailable: leave banner hidden */ }
+    // Embed code copy button
+    document.querySelectorAll("[data-action=copy-embed]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var ta = document.getElementById("embed-code");
+        var done = function () {
+          b.textContent = "Copied!";
+          setTimeout(function () { b.textContent = "Copy code"; }, 2000);
+        };
+        if (ta) {
+          var txt = ta.textContent;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txt).then(done, done);
+          } else {
+            var tmp = document.createElement("textarea");
+            tmp.value = txt;
+            document.body.appendChild(tmp);
+            tmp.select();
+            try { document.execCommand("copy"); } catch (e) {}
+            document.body.removeChild(tmp);
+            done();
+          }
+        }
+      });
+    });
   });
 }
 
@@ -213,7 +391,12 @@ if (typeof module !== "undefined" && module.exports) {
     YARN_WEIGHTS: YARN_WEIGHTS,
     PROJECT_YARDAGE: PROJECT_YARDAGE,
     PROJECT_LABELS: PROJECT_LABELS,
+    CRAFTS: CRAFTS,
+    STITCHES: STITCHES,
+    WEIGHT_AREA_YDS: WEIGHT_AREA_YDS,
     calculate: calculate,
-    weightById: weightById
+    weightById: weightById,
+    craftById: craftById,
+    stitchById: stitchById
   };
 }

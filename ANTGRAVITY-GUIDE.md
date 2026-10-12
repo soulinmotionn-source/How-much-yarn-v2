@@ -25,6 +25,8 @@ edit data (JSON / JS / CSS) → run `python3 build.py` → verify → commit
 
 If you edit a `.html` file directly, your change will be wiped on the next build.
 
+**URL convention (2026-10-12):** the site uses **extensionless URLs** (`/projects/x`, `/about`). The Cloudflare Worker strips `.html` and serves the `.html` files on disk — so `build.py` generates extensionless hrefs, canonicals, sitemap, and JSON-LD, while the files on disk keep their `.html` names. Never put `.html` back into URLs; never rename the files on disk.
+
 ## 3. File map
 
 | File | Edit? | Purpose |
@@ -33,7 +35,7 @@ If you edit a `.html` file directly, your change will be wiped on the next build
 | `guides.json` | YES | Data for the 8 guide articles (sections, internal links, FAQs) |
 | `assets/js/calculator.js` | YES | `PROJECT_YARDAGE` data table + calculator widget logic (v2: button-triggered, `?project=`/`?weight=` URL prefill) |
 | `assets/css/main.css` | YES | All styling — v2 premium design tokens (see §9) |
-| `assets/img/` | YES (add) | Photorealistic craft imagery. Card images are 800px, hero 1600px, q82 JPG. Keep filenames in `PROJECT_IMG`/`GUIDE_IMG` maps in `build.py` in sync if you add images |
+| `assets/img/` | YES (add) | Photorealistic craft imagery. Card images are 800px, hero 1600px, q82 JPG. **2026-10-07: images now live flat in `assets/`** (user uploaded them there via GitHub web UI) — `build.py` was updated to reference `assets/` instead of `assets/img/`; keep both in sync |
 | `build.py` | YES (careful) | The generator. Config at top: `SITE`, `SITE_NAME`, `CONTACT_EMAIL` |
 | `index.html`, `projects/*.html`, `guides/*.html`, `about/contact/privacy-policy/terms.html` | NO | Generated output — do not touch |
 | `sitemap.xml`, `robots.txt` | NO | Generated output — do not touch |

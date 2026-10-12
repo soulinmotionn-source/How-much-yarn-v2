@@ -298,16 +298,39 @@ def calc_widget(preset=""):
 <div class="card-head">
 <span class="mark"><img src="{RP}assets/logo-icon.png" alt="" width="40" height="40"></span>
 <div><h2>Calculate Your Yarn Needs</h2>
-<p>Select your project, yarn weight, and enter your yarn details to get an instant estimate.</p></div>
+<p>Pick a project or enter custom dimensions, choose your craft and stitch, and get an instant estimate with cost.</p></div>
+</div>
+<div class="mode-tabs" role="tablist" aria-label="Calculator mode">
+<button type="button" class="mode-tab active" data-mode-tab="project" role="tab" aria-selected="true">By project</button>
+<button type="button" class="mode-tab" data-mode-tab="custom" role="tab" aria-selected="false">Custom size</button>
 </div>
 <div class="field-grid">
-<div class="field">
+<div class="field span-2" data-show="project">
 <label for="f-project">{ICONS["project"]} Project</label>
 <select id="f-project" data-field="project" aria-label="Project"></select>
+</div>
+<div class="field span-2" data-show="custom" hidden>
+<label id="f-size-label">{ICONS["project"]} Finished size</label>
+<div class="dim-grid" role="group" aria-labelledby="f-size-label">
+<input data-field="width" type="number" min="1" inputmode="decimal" placeholder="Width" aria-label="Width">
+<input data-field="length" type="number" min="1" inputmode="decimal" placeholder="Length" aria-label="Length">
+<select data-field="unit" aria-label="Units"><option value="in">inches</option><option value="cm">cm</option></select>
+</div>
+</div>
+<div class="field">
+<label id="f-craft-label">{ICONS["weight"]} Craft</label>
+<div class="segmented" role="radiogroup" aria-labelledby="f-craft-label">
+<label class="seg"><input type="radio" name="craft" data-field="craft" value="knit" checked><span>Knitting</span></label>
+<label class="seg"><input type="radio" name="craft" data-field="craft" value="crochet"><span>Crochet</span></label>
+</div>
 </div>
 <div class="field">
 <label for="f-weight">{ICONS["weight"]} Yarn weight</label>
 <select id="f-weight" data-field="weight" aria-label="Yarn weight"></select>
+</div>
+<div class="field">
+<label for="f-stitch">{ICONS["project"]} Stitch pattern</label>
+<select id="f-stitch" data-field="stitch" aria-label="Stitch pattern"></select>
 </div>
 <div class="field">
 <label for="f-skein">{ICONS["skein"]} Yards per skein <span style="font-weight:400">(from your label)</span></label>
@@ -315,9 +338,14 @@ def calc_widget(preset=""):
 <p class="hint" id="skein-hint">Auto-filled for the chosen weight — change it to match your yarn.</p>
 </div>
 <div class="field">
-<label for="f-buffer">{ICONS["buffer"]} Safety buffer (%)</label>
-<input id="f-buffer" data-field="buffer" type="number" min="0" max="50" inputmode="numeric" value="10" aria-describedby="buffer-hint">
+<label for="f-buffer">{ICONS["buffer"]} Safety buffer <output data-field="buffer-val" for="f-buffer">10%</output></label>
+<div class="buffer-row"><input id="f-buffer" data-field="buffer" type="range" min="0" max="50" step="1" value="10" aria-describedby="buffer-hint"></div>
 <p class="hint" id="buffer-hint">10–15% covers gauge differences and mistakes.</p>
+</div>
+<div class="field">
+<label for="f-price">{ICONS["skein"]} Price per skein <span style="font-weight:400">(optional)</span></label>
+<input id="f-price" data-field="price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 8.99">
+<p class="hint">Add it to see your estimated project cost.</p>
 </div>
 </div>
 <button class="btn-primary" data-action="calculate" type="button">Calculate Yarn <span class="arr">&rsaquo;</span></button>
@@ -326,7 +354,7 @@ def calc_widget(preset=""):
 <div class="card-head">
 <span class="mark" style="background:var(--sage)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" stroke-width="2" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg></span>
 <div><h2>Your Results</h2>
-<p>Your estimated yarn yardage and skein count.</p></div>
+<p>Yardage, skeins, and cost — updated live as you change options.</p></div>
 </div>
 <div data-field="result"></div>
 </div>
@@ -335,7 +363,7 @@ def calc_widget(preset=""):
 # ------------------------------------------------------------ index ---
 INDEX_FAQS = [
     {"q": "How does the yarn yardage calculator work?",
-     "a": "Pick your project and yarn weight, enter the yardage printed on your yarn label, and the calculator returns total yardage (in yards and meters) plus how many skeins to buy — with a safety buffer for gauge differences and mistakes."},
+     "a": "Choose a project or enter custom dimensions, pick knitting or crochet plus your stitch pattern, and enter the yardage printed on your yarn label — optionally the price per skein too. The calculator returns total yardage (in yards and meters), how many skeins to buy, and the estimated project cost — with a safety buffer for gauge differences and mistakes."},
     {"q": "How accurate are the yardage estimates?",
      "a": "They are planning estimates for average-size projects and typical gauges, drawn from standard craft references (Lion Brand, Craft Yarn Council charts). Your gauge, stitch pattern, and finished size move the numbers, which is why we add a 10–15% buffer and always recommend one extra skein."},
     {"q": "Does crochet use more yarn than knitting?",
@@ -388,6 +416,8 @@ def build_index():
 <section class="calc-section"><div class="container">
 {calc_widget()}
 </div></section>
+
+{embed_section()}
 
 {ad_slot()}
 
@@ -677,6 +707,60 @@ def build_policies():
 <h2>Changes</h2>
 <p>We may update these terms; continued use of the site after changes means you accept them.</p>""")
 
+# ------------------------------------------------------------- embed ---
+EMBED_SNIPPET = """<iframe id="hmy-calc" src="https://howmuchyarn.com/embed" title="Free Yarn Yardage Calculator" width="100%" height="700" style="border:1px solid #e8e0d0;border-radius:16px;max-width:720px;width:100%" loading="lazy"></iframe>
+<p style="font-size:13px;text-align:center;font-family:sans-serif">Powered by <a href="https://howmuchyarn.com/">HowMuchYarn</a> &mdash; free yarn calculator</p>
+<script>
+window.addEventListener("message",function(e){if(e.origin!=="https://howmuchyarn.com")return;if(e.data&&e.data.hmyHeight){document.getElementById("hmy-calc").style.height=e.data.hmyHeight+"px";}});
+</script>"""
+
+def build_embed():
+    """Standalone embeddable calculator page (noindex, excluded from sitemap)."""
+    global RP; RP = ""
+    body = f"""<div class="embed-brand"><img src="assets/logo-icon.png" alt="HowMuchYarn logo" width="34" height="34"> HowMuchYarn</div>
+{calc_widget()}
+<p class="embed-powered">Powered by <a href="{SITE}/" target="_blank" rel="noopener">HowMuchYarn</a> &mdash; free yarn calculator</p>"""
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Yarn Yardage Calculator &mdash; HowMuchYarn</title>
+<meta name="description" content="Embeddable free yarn yardage calculator for knitting and crochet projects.">
+<meta name="robots" content="noindex,follow">
+<link rel="icon" href="assets/logo-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body class="embed-page">
+{body}
+<script src="assets/js/calculator.js"></script>
+<script>
+function hmySend(){{try{{parent.postMessage({{hmyHeight:document.documentElement.scrollHeight}},"*");}}catch(e){{}}}}
+window.addEventListener("load",function(){{hmySend();setTimeout(hmySend,600);}});
+if("MutationObserver" in window){{new MutationObserver(hmySend).observe(document.getElementById("yarn-calc"),{{childList:true,subtree:true,attributes:true}});}}
+</script>
+</body>
+</html>
+"""
+    (ROOT / "embed.html").write_text(html, encoding="utf-8")
+
+def embed_section():
+    code = esc(EMBED_SNIPPET)
+    return f"""<section class="section"><div class="container">
+<div class="embed-section">
+<h2>Put this calculator on your website</h2>
+<p>Bloggers, pattern designers, and shop owners: embed our free yarn calculator on any page. It auto-resizes to fit, matches your content, and links back to us — free forever.</p>
+<pre><code id="embed-code">{code}</code></pre>
+<div class="embed-copy-row">
+<button type="button" class="btn-ghost" data-action="copy-embed">Copy code</button>
+<a class="btn-ghost" href="{SITE}/embed" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">Live preview</a>
+</div>
+</div>
+</div></section>"""
+
 # ------------------------------------------------------------- seo ---
 def build_sitemap(urls):
     items = "\n".join(
@@ -703,6 +787,7 @@ def main():
     for g in GUIDES:
         build_guide(g)
     build_policies()
+    build_embed()
 
     urls = [(SITE + "/", "weekly", "1.0"),
             (SITE + "/projects/", "weekly", "0.9"),
@@ -716,7 +801,7 @@ def main():
     build_sitemap(urls)
     build_robots()
 
-    pages = 1 + 1 + len(PROJECTS) + 1 + len(GUIDES) + 4
+    pages = 1 + 1 + len(PROJECTS) + 1 + len(GUIDES) + 4 + 1  # +1: /embed (noindex, not in sitemap)
     print(f"Built {pages} pages + sitemap.xml + robots.txt -> {ROOT}")
 
 if __name__ == "__main__":

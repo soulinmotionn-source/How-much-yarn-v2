@@ -107,6 +107,41 @@ p{margin:0 0 1em}
 .result-note svg{width:20px;height:20px;flex:0 0 20px;color:var(--forest);margin-top:2px}
 .calc-fallback{font-size:.85rem;color:var(--muted);background:var(--oatmeal);border-radius:10px;padding:10px 14px;margin-top:12px}
 
+/* ---------- Calculator v3: mode tabs, segmented craft, slider ---------- */
+.mode-tabs{display:flex;gap:6px;background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:6px;margin-top:20px}
+.mode-tab{flex:1;border:0;background:transparent;padding:11px 8px;border-radius:10px;font:inherit;font-weight:700;font-size:.95rem;color:var(--muted);cursor:pointer;transition:background .15s ease,color .15s ease}
+.mode-tab:hover{color:var(--forest)}
+.mode-tab.active{background:#fff;color:var(--forest);box-shadow:0 1px 4px rgba(60,50,35,.15)}
+.field.span-2{grid-column:1/-1}
+.field[hidden]{display:none}
+.dim-grid{display:grid;grid-template-columns:1fr 1fr 110px;gap:10px}
+.segmented{display:flex;background:var(--cream);border:1.5px solid var(--line);border-radius:12px;padding:5px;gap:5px;min-height:52px}
+.seg{flex:1;position:relative;margin:0}
+.seg input{position:absolute;opacity:0;pointer-events:none;min-height:0;padding:0}
+.seg span{display:flex;align-items:center;justify-content:center;height:100%;min-height:40px;text-align:center;padding:8px;border-radius:9px;font-weight:700;font-size:.95rem;cursor:pointer;color:var(--muted);transition:background .15s ease,color .15s ease}
+.seg input:checked+span{background:var(--forest);color:#fff}
+.seg input:focus-visible+span{outline:2px solid var(--terra);outline-offset:2px}
+.field output{margin-left:auto;font-weight:800;color:var(--terra);font-size:.95rem}
+.buffer-row{display:flex;align-items:center}
+input[type=range][data-field=buffer]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:99px;background:linear-gradient(to right,var(--forest) 0%,var(--forest) 20%,var(--line) 20%,var(--line) 100%);border:0;padding:0;min-height:0;cursor:pointer}
+input[type=range][data-field=buffer]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;border:3px solid var(--forest);box-shadow:0 1px 4px rgba(0,0,0,.2);cursor:grab}
+input[type=range][data-field=buffer]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--forest);box-shadow:0 1px 4px rgba(0,0,0,.2);cursor:grab}
+
+/* ---------- Embed page & embed section ---------- */
+.embed-page{background:var(--cream);padding:24px 16px;min-height:100vh}
+.embed-brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:18px;font-family:var(--font-display);font-weight:800;font-size:1.15rem;color:var(--forest)}
+.embed-brand img{width:34px;height:34px;border-radius:50%}
+.embed-page .calc-grid{max-width:720px;margin:0 auto}
+.embed-powered{text-align:center;font-size:.82rem;color:var(--muted);margin-top:18px}
+.embed-powered a{color:var(--forest);font-weight:700}
+.embed-section{background:var(--forest);border-radius:var(--radius);padding:40px;color:#fff;margin-top:64px}
+.embed-section h2{color:#fff;margin:0 0 8px}
+.embed-section p{color:rgba(255,255,255,.82);max-width:640px}
+.embed-section pre{background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:18px;overflow-x:auto;font-size:.8rem;line-height:1.5;color:#f3eedd;margin:20px 0 0;white-space:pre-wrap;word-break:break-all}
+.embed-copy-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap}
+.btn-ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.5);border-radius:12px;padding:12px 22px;font:inherit;font-weight:700;cursor:pointer;min-height:52px}
+.btn-ghost:hover{border-color:#fff}
+
 /* ---------- Cards: projects & guides ---------- */
 .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:26px}
 .section-head h2{margin:0}
