@@ -33,6 +33,7 @@ def load_json(name):
 
 PROJECTS = load_json("projects.json")
 GUIDES = load_json("guides.json")
+PATTERNS = load_json("patterns.json")
 
 def load_calc_data():
     src = (ROOT / "assets" / "js" / "calculator.js").read_text(encoding="utf-8")
@@ -139,6 +140,32 @@ def ld_script(*objs):
     return '<script type="application/ld+json">\n' + json.dumps(
         list(objs), indent=1) + '\n</script>'
 
+def ld_howto(pat, image):
+    steps = [
+        ("Chain the foundation",
+         "Chain " + ", ".join(f"{r[3]} for {r[0]}" for r in pat["sizes_table"]) + "."),
+        ("Work Row 1",
+         "Half-double-crochet in the 2nd chain from the hook and in each chain across. Count your stitches."),
+        ("Work the ribbed rows",
+         "Chain 1, turn, and half-double-crochet in the back loop only of each stitch. Repeat until you reach the row count for your size."),
+        ("Seam the sides",
+         "Fold the rectangle in half with right sides together and seam the short ends with a whipstitch."),
+        ("Cinch the crown",
+         "Weave the yarn tail along the top edge, pull tight to close the crown, knot securely and weave in the end."),
+        ("Finish",
+         "Turn right-side out, weave in the starting tail, fold up the brim, and add an optional pom-pom."),
+    ]
+    return {"@context": "https://schema.org", "@type": "HowTo",
+            "name": pat["h1"], "image": img_url(image),
+            "description": pat["meta_desc"],
+            "totalTime": "PT3H",
+            "supply": [{"@type": "HowToSupply", "name": "Worsted weight (#4) yarn"},
+                       {"@type": "HowToSupply", "name": "US I-9 (5.5 mm) crochet hook"},
+                       {"@type": "HowToSupply", "name": "Yarn needle and scissors"}],
+            "tool": [{"@type": "HowToTool", "name": "US I-9 (5.5 mm) crochet hook"}],
+            "step": [{"@type": "HowToStep", "position": i + 1, "name": n, "text": t}
+                     for i, (n, t) in enumerate(steps)]}
+
 # --------------------------------------------------------- templates ---
 FONTS_URL = ("https://fonts.googleapis.com/css2?"
              "family=Playfair+Display:wght@600;700;800&"
@@ -201,6 +228,7 @@ def site_header(active):
 {nav(RP + "./", "Calculator", "calc")}
 {nav(RP + "projects/index", "Projects", "projects")}
 {nav(RP + "guides/index", "Guides", "guides")}
+{nav(RP + "patterns/index", "Patterns", "patterns")}
 <a class="search-btn" href="{RP}projects/index" aria-label="Browse all projects">
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
 </a>
@@ -533,6 +561,10 @@ def build_project(p):
 <div><h2>Get your exact numbers</h2><p>Run {esc(label.lower())} through the free calculator with your yarn's label details.</p></div>
 <a class="btn-light" href="{RP}./?project={key}">Calculate my yardage &rsaquo;</a>
 </div>
+{f'''<div class="cta-band" style="margin-top:18px">
+<div><h2>Free pattern: Everyday Ribbed Beanie</h2><p>Our really-free beginner beanie pattern — 4 sizes, zero shaping, exact yardage included. No signup, no credit needed.</p></div>
+<a class="btn-light" href="{RP}patterns/everyday-ribbed-beanie-crochet-pattern">Get the free pattern &rsaquo;</a>
+</div>''' if key == "hat" else ""}
 
 <h2>Frequently asked questions</h2>
 {faq_block(p["faqs"])}
@@ -633,6 +665,103 @@ def build_guides_index():
         ld_objs=[ld_org(), ld_breadcrumb([("Home", SITE + "/"), ("Guides", SITE + "/guides/")])],
         body=body, active="guides")
     (ROOT / "guides" / "index.html").write_text(html, encoding="utf-8")
+
+# -------------------------------------------------- patterns pages ---
+def build_pattern(pat):
+    global RP; RP = "../"
+    img = pat["img"]
+    crumbs = [("Home", SITE + "/"), ("Patterns", SITE + "/patterns/"),
+              (pat["h1"], SITE + "/patterns/" + pat["slug"] + "")]
+
+    size_rows = "".join(
+        f"<tr><td><strong>{r[0]}</strong></td><td>{r[1]}</td><td>{r[2]}</td>"
+        f"<td>{r[3]}</td><td>{r[4]}</td><td class=\"num\">{r[5]}</td></tr>"
+        for r in pat["sizes_table"])
+    yd_rows = "".join(
+        f"<tr><td><strong>{r[0]}</strong></td><td class=\"num\">{r[1]}</td>"
+        f"<td class=\"num\">{r[2]}</td><td class=\"num\">{r[3]}</td></tr>"
+        for r in pat["yardage_table"])
+    tables = f"""<div class="table-wrap"><table class="chart">
+<thead><tr><th>Size</th><th>Fits head</th><th>Finished size</th><th>Foundation chain</th><th>Rows</th><th>Worsted yarn</th></tr></thead>
+<tbody>{size_rows}</tbody></table></div>
+<div class="table-wrap" style="margin-top:18px"><table class="chart">
+<thead><tr><th>Size</th><th>Worsted (#4)</th><th>Bulky (#5)</th><th>DK (#3)</th></tr></thead>
+<tbody>{yd_rows}</tbody></table></div>"""
+
+    secs = ""
+    for s in pat["sections"]:
+        extra = tables if s["h2"] == "Sizes" else ""
+        secs += f'<h2>{esc(s["h2"])}</h2>\n{s["html"]}\n{extra}'
+
+    photos = f"""<div class="article-hero"><img src="{RP}assets/{img}" alt="{esc(pat["h1"])} — finished beanie" width="1200" height="800" loading="lazy"></div>
+<div class="cards" style="grid-template-columns:repeat(2,1fr);margin-top:18px">
+<img src="{RP}assets/pattern-beanie/beanie-detail.webp" alt="Close-up of the ribbed crochet stitches" loading="lazy" width="800" height="600" style="border-radius:12px;width:100%;height:auto">
+<img src="{RP}assets/pattern-beanie/beanie-flatlay.webp" alt="Beanie with yarn, crochet hook and scissors" loading="lazy" width="800" height="600" style="border-radius:12px;width:100%;height:auto">
+</div>"""
+
+    others = [q for q in PATTERNS if q["slug"] != pat["slug"]][:3]
+    rel = "".join(
+        f"""<a class="pcard" href="{q["slug"]}">
+<img src="{RP}assets/{q["img"]}" alt="{esc(q["h1"])}" loading="lazy" width="400" height="400">
+<span class="cap">{esc(q["h1"])} <span class="go" aria-hidden="true">&rarr;</span></span></a>"""
+        for q in others)
+    rel_block = (f"""<div class="related"><div class="section-head"><div><h2>More free patterns</h2></div>"""
+                 f"""<a class="link-more" href="./">View all &rarr;</a></div>"""
+                 f"""<div class="cards" style="grid-template-columns:repeat(3,1fr)">{rel}</div></div>""" if rel else "")
+
+    body = f"""<div class="container">
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="{RP}./">Home</a> &rsaquo; <a href="./">Patterns</a> &rsaquo; {esc(pat["h1"])}</nav>
+<article style="max-width:none">
+<h1>{esc(pat["h1"])}</h1>
+<div class="prose">
+<p class="lede">{esc(pat["lede"])}</p>
+<p class="hint">{esc(pat["free_note"])}</p>
+</div>
+{photos}
+<div class="prose">
+{secs}
+</div>
+<div class="cta-band">
+<div><h2>Get your exact yardage</h2><p>Run this pattern through the free calculator with your yarn's label details.</p></div>
+<a class="btn-light" href="{RP}./?project=hat">Calculate my yardage &rsaquo;</a>
+</div>
+<h2>Frequently asked questions</h2>
+{faq_block(pat["faqs"])}
+{rel_block}
+</article>
+</div>
+{ad_slot()}"""
+    html = base(
+        title=pat["title"], desc=pat["meta_desc"],
+        canon_path="/patterns/" + pat["slug"] + "",
+        og_image=img_url("pattern-beanie/beanie-hero.jpg"),
+        ld_objs=[ld_org(), ld_breadcrumb(crumbs), ld_howto(pat, img), ld_faq(pat["faqs"])],
+        body=body, active="patterns")
+    (ROOT / "patterns" / (pat["slug"] + ".html")).write_text(html, encoding="utf-8")
+
+def build_patterns_index():
+    global RP; RP = "../"
+    cards = "".join(
+        f"""<a class="pcard" href="{p["slug"]}">
+<img src="{RP}assets/{p["img"]}" alt="{esc(p["h1"])}" loading="lazy" width="400" height="400">
+<span class="cap">{esc(p["h1"])} <span class="go" aria-hidden="true">&rarr;</span></span>
+<span class="desc">{esc(p["meta_desc"][:110])}…</span></a>"""
+        for p in PATTERNS)
+    body = f"""<div class="container">
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="{RP}./">Home</a> &rsaquo; Patterns</nav>
+<h1 style="margin-bottom:8px">Free Crochet & Knitting Patterns</h1>
+<p class="hero-sub" style="margin-top:0">Really free patterns — no signup, no credit required — each paired with exact yardage from the calculator.</p>
+<div class="cards" style="margin:30px 0 10px">{cards}</div>
+</div>
+{ad_slot()}"""
+    html = base(
+        title="Free Crochet & Knitting Patterns — Really Free, No Signup",
+        desc="Free crochet and knitting patterns with exact yardage per size. No account, no email signup, no credit required.",
+        canon_path="/patterns/",
+        og_image=img_url("pattern-beanie/beanie-hero.jpg"),
+        ld_objs=[ld_org(), ld_breadcrumb([("Home", SITE + "/"), ("Patterns", SITE + "/patterns/")])],
+        body=body, active="patterns")
+    (ROOT / "patterns" / "index.html").write_text(html, encoding="utf-8")
 
 # ---------------------------------------------------- policy pages ---
 def policy_page(fname, title, desc, h1, prose_html):
@@ -798,6 +927,7 @@ def build_robots():
 def main():
     (ROOT / "projects").mkdir(exist_ok=True)
     (ROOT / "guides").mkdir(exist_ok=True)
+    (ROOT / "patterns").mkdir(exist_ok=True)
 
     build_index()
     build_projects_index()
@@ -806,14 +936,19 @@ def main():
     build_guides_index()
     for g in GUIDES:
         build_guide(g)
+    build_patterns_index()
+    for pat in PATTERNS:
+        build_pattern(pat)
     build_policies()
     build_embed()
 
     urls = [(SITE + "/", "weekly", "1.0"),
             (SITE + "/projects/", "weekly", "0.9"),
-            (SITE + "/guides/", "weekly", "0.9")]
+            (SITE + "/guides/", "weekly", "0.9"),
+            (SITE + "/patterns/", "weekly", "0.9")]
     urls += [(SITE + "/projects/" + p["slug"] + "", "monthly", "0.8") for p in PROJECTS]
     urls += [(SITE + "/guides/" + g["slug"] + "", "monthly", "0.7") for g in GUIDES]
+    urls += [(SITE + "/patterns/" + pat["slug"] + "", "monthly", "0.8") for pat in PATTERNS]
     urls += [(SITE + "/about", "yearly", "0.4"),
              (SITE + "/contact", "yearly", "0.4"),
              (SITE + "/privacy-policy", "yearly", "0.3"),
@@ -821,7 +956,7 @@ def main():
     build_sitemap(urls)
     build_robots()
 
-    pages = 1 + 1 + len(PROJECTS) + 1 + len(GUIDES) + 4 + 1  # +1: /embed (noindex, not in sitemap)
+    pages = 1 + 1 + len(PROJECTS) + 1 + len(GUIDES) + 1 + len(PATTERNS) + 4 + 1  # +1: /embed (noindex, not in sitemap)
     print(f"Built {pages} pages + sitemap.xml + robots.txt -> {ROOT}")
 
 if __name__ == "__main__":
