@@ -188,6 +188,17 @@ table.chart th{background:var(--forest);color:#fff;text-align:left;font-weight:6
 table.chart td{padding:13px 18px;border-top:1px solid var(--line)}
 table.chart tr:nth-child(even) td{background:#FBF7EE}
 table.chart td.num{font-weight:700;color:var(--forest-deep)}
+/* guide content tables (table.data) share the chart look */
+.table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--card);box-shadow:var(--shadow-sm)}
+table.data{width:100%;border-collapse:collapse;font-size:.95rem;min-width:560px}
+table.data th{background:var(--forest);color:#fff;text-align:left;font-weight:600;padding:14px 18px;white-space:nowrap}
+table.data td{padding:13px 18px;border-top:1px solid var(--line)}
+table.data tr:nth-child(even) td{background:#FBF7EE}
+/* pattern page: natural-ratio hero + photo duo + free-note callout */
+.article-hero.natural img{aspect-ratio:auto;object-fit:contain}
+.photo-duo{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:18px}
+.photo-duo img{border-radius:14px;width:100%;height:auto;display:block;box-shadow:var(--shadow-sm)}
+.free-note{background:#FFF6E3;border:1px solid #EDD9A8;border-radius:14px;padding:14px 18px;font-weight:600;color:#7A5B1E;margin:16px 0 0}
 
 /* ---------- Article ---------- */
 .breadcrumb{font-size:.82rem;color:var(--muted);margin:26px 0 14px;letter-spacing:.02em}
@@ -305,7 +316,18 @@ table.chart td.num{font-weight:700;color:var(--forest-deep)}
   .section-head{flex-direction:column;align-items:flex-start;gap:8px}
   .article-hero img{aspect-ratio:16/10}
   .result-box .n{font-size:1.6rem}
-  .table-wrap{margin:0 -18px;border-radius:0;border-left:0;border-right:0}
+  /* responsive tables: stacked cards, no horizontal scroll */
+  .table-wrap,.table-scroll{overflow:visible;border:0;background:none;box-shadow:none;margin-left:0;margin-right:0}
+  table.chart,table.data{min-width:0;border:0}
+  table.chart thead,table.data thead{display:none}
+  table.chart tbody,table.data tbody{display:block}
+  table.chart tr,table.data tr{display:block;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:var(--shadow-sm);margin-bottom:12px;overflow:hidden}
+  table.chart tr:last-child,table.data tr:last-child{margin-bottom:0}
+  table.chart tr:nth-child(even) td,table.data tr:nth-child(even) td{background:none}
+  table.chart td,table.data td{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:11px 16px;border-top:0;border-bottom:1px solid var(--line);text-align:right}
+  table.chart td:last-child,table.data td:last-child{border-bottom:0}
+  table.chart td::before,table.data td::before{content:attr(data-label);font-weight:600;font-size:.82rem;color:var(--muted);text-align:left;flex-shrink:0}
+  .photo-duo{grid-template-columns:1fr}
   .cta-band{flex-direction:column;align-items:flex-start}
 }
 @media (max-width:380px){

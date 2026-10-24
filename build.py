@@ -430,9 +430,9 @@ def build_index():
         for k, label in POPULAR)
 
     glance_rows = "".join(
-        (lambda n: f"""<tr><td><a href="{RP}projects/{PROJ_BY_KEY[k]["slug"]}">{esc(LABELS[k])}</a></td>"""
-        f"""<td class="num">{YARDAGE[k]["worsted"]:,} yds</td>"""
-        f"""<td>{n} skein{'s' if n != 1 else ''}*</td></tr>""")(
+        (lambda n: f"""<tr><td data-label="Project"><a href="{RP}projects/{PROJ_BY_KEY[k]["slug"]}">{esc(LABELS[k])}</a></td>"""
+        f"""<td class="num" data-label="Estimated yardage">{YARDAGE[k]["worsted"]:,} yds</td>"""
+        f"""<td data-label="Skeins needed">{n} skein{'s' if n != 1 else ''}*</td></tr>""")(
             -(-int(YARDAGE[k]["worsted"] * 1.1) // WEIGHT_SKEIN["worsted"]))
         for k in ["baby-blanket", "throw-blanket", "scarf", "hat", "sweater", "shawl"])
 
@@ -520,9 +520,9 @@ def chart_rows(key):
         yds = YARDAGE[key][wid]
         skeins = -(-int(yds * 1.1) // WEIGHT_SKEIN[wid])  # ceil, 10% buffer
         rows.append(
-            f"<tr><td>{esc(WEIGHT_NAME[wid])}</td>"
-            f'<td class="num">{yds:,} yds</td>'
-            f"<td>{skeins} skeins</td></tr>")
+            f'<tr><td data-label="Yarn weight">{esc(WEIGHT_NAME[wid])}</td>'
+            f'<td class="num" data-label="Estimated yardage">{yds:,} yds</td>'
+            f'<td data-label="Skeins needed">{skeins} skeins</td></tr>')
     return "".join(rows)
 
 def build_project(p):
@@ -674,12 +674,18 @@ def build_pattern(pat):
               (pat["h1"], SITE + "/patterns/" + pat["slug"] + "")]
 
     size_rows = "".join(
-        f"<tr><td><strong>{r[0]}</strong></td><td>{r[1]}</td><td>{r[2]}</td>"
-        f"<td>{r[3]}</td><td>{r[4]}</td><td class=\"num\">{r[5]}</td></tr>"
+        f'<tr><td data-label="Size"><strong>{r[0]}</strong></td>'
+        f'<td data-label="Fits head">{r[1]}</td>'
+        f'<td data-label="Finished size">{r[2]}</td>'
+        f'<td data-label="Foundation chain">{r[3]}</td>'
+        f'<td data-label="Rows">{r[4]}</td>'
+        f'<td class="num" data-label="Worsted yarn">{r[5]}</td></tr>'
         for r in pat["sizes_table"])
     yd_rows = "".join(
-        f"<tr><td><strong>{r[0]}</strong></td><td class=\"num\">{r[1]}</td>"
-        f"<td class=\"num\">{r[2]}</td><td class=\"num\">{r[3]}</td></tr>"
+        f'<tr><td data-label="Size"><strong>{r[0]}</strong></td>'
+        f'<td class="num" data-label="Worsted (#4)">{r[1]}</td>'
+        f'<td class="num" data-label="Bulky (#5)">{r[2]}</td>'
+        f'<td class="num" data-label="DK (#3)">{r[3]}</td></tr>'
         for r in pat["yardage_table"])
     tables = f"""<div class="table-wrap"><table class="chart">
 <thead><tr><th>Size</th><th>Fits head</th><th>Finished size</th><th>Foundation chain</th><th>Rows</th><th>Worsted yarn</th></tr></thead>
@@ -693,10 +699,10 @@ def build_pattern(pat):
         extra = tables if s["h2"] == "Sizes" else ""
         secs += f'<h2>{esc(s["h2"])}</h2>\n{s["html"]}\n{extra}'
 
-    photos = f"""<div class="article-hero"><img src="{RP}assets/{img}" alt="{esc(pat["h1"])} — finished beanie" width="1200" height="800" loading="lazy"></div>
-<div class="cards" style="grid-template-columns:repeat(2,1fr);margin-top:18px">
-<img src="{RP}assets/pattern-beanie/beanie-detail.webp" alt="Close-up of the ribbed crochet stitches" loading="lazy" width="800" height="600" style="border-radius:12px;width:100%;height:auto">
-<img src="{RP}assets/pattern-beanie/beanie-flatlay.webp" alt="Beanie with yarn, crochet hook and scissors" loading="lazy" width="800" height="600" style="border-radius:12px;width:100%;height:auto">
+    photos = f"""<div class="article-hero natural"><img src="{RP}assets/{img}" alt="{esc(pat["h1"])} — finished beanie" width="1920" height="1280" loading="lazy"></div>
+<div class="photo-duo">
+<img src="{RP}assets/pattern-beanie/beanie-detail.webp" alt="Close-up of the ribbed crochet stitches" loading="lazy" width="1920" height="1280">
+<img src="{RP}assets/pattern-beanie/beanie-flatlay.webp" alt="Beanie with yarn, crochet hook and scissors" loading="lazy" width="1920" height="1280">
 </div>"""
 
     others = [q for q in PATTERNS if q["slug"] != pat["slug"]][:3]
@@ -715,7 +721,7 @@ def build_pattern(pat):
 <h1>{esc(pat["h1"])}</h1>
 <div class="prose">
 <p class="lede">{esc(pat["lede"])}</p>
-<p class="hint">{esc(pat["free_note"])}</p>
+<p class="free-note">{esc(pat["free_note"])}</p>
 </div>
 {photos}
 <div class="prose">
